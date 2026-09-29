@@ -1,0 +1,23 @@
+{
+  "name": "bear",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others -n client,server \"npm run dev -w @bear/client\" \"npm run dev -w @bear/server\"",
+    "build": "npm run build -w @bear/client",
+    "start": "npm start -w @bear/server",
+    "test": "npm test -w @bear/shared && npm test -w @bear/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
