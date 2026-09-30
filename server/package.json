@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@bear/shared": "*",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "multer": "^2.4.0",
+    "nodemailer": "^7.0.13"
   }
 }
