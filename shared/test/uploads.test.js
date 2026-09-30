@@ -5,20 +5,19 @@ import { UPLOAD_POLICY, validateFileSelection } from '../src/index.js';
 test('attachments are optional', () => {
   assert.deepEqual(validateFileSelection([]), []);
 });
-test('allows several supported formats, including uppercase', () => {
+test('allows supported formats with a combined size within 18 MB', () => {
   assert.deepEqual(validateFileSelection([
-    { name: 'drawing.DWG', size: 50_000_000 },
-    { name: 'model.step', size: 12_000_000 },
-    { name: 'brief.pdf', size: 500 },
+    { name: 'drawing.DWG', size: 10_000_000 },
+    { name: 'model.step', size: 7_000_000 },
+    { name: 'brief.pdf', size: 1_000_000 },
   ]), []);
 });
-test('accepts exactly five files at the size limit', () => {
-  const files = Array.from({ length: 5 }, (_, i) => ({ name: i + '.pdf', size: 50_000_000 }));
-  assert.deepEqual(validateFileSelection(files), []);
-  assert.equal(UPLOAD_POLICY.maxTotalBytes, 250_000_000);
-});
-test('rejects even one byte above the per-file limit', () => {
-  assert.ok(validateFileSelection([{ name: 'a.pdf', size: 50_000_001 }]).length);
+test('rejects files over 25 MB and collections over 18 MB', () => {
+  assert.equal(UPLOAD_POLICY.maxFileBytes, 25_000_000);
+  assert.equal(UPLOAD_POLICY.maxTotalBytes, 18_000_000);
+  assert.ok(validateFileSelection([{ name: 'a.pdf', size: 25_000_001 }]).some((error) => error.includes('25 МБ')));
+  assert.ok(validateFileSelection([{ name: 'a.pdf', size: 9_000_000 }, { name: 'b.pdf', size: 9_000_001 }])
+    .some((error) => error.includes('18 МБ')));
 });
 test('rejects a sixth attachment', () => {
   assert.ok(validateFileSelection(Array.from({ length: 6 }, () => ({ name: 'a.jpg', size: 10 }))).length);

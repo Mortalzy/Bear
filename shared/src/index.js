@@ -1,12 +1,11 @@
 export const UPLOAD_POLICY = Object.freeze({
   maxFiles: 5,
-  maxFileBytes: 50_000_000,
-  maxTotalBytes: 250_000_000,
+  maxFileBytes: 25_000_000,
+  maxTotalBytes: 18_000_000,
   extensions: Object.freeze(['.dwg', '.dxf', '.step', '.pdf', '.jpg']),
 });
 
-// Client-side feedback only. The future upload handler must enforce limits
-// on the actual streamed bytes and verify content, not trust this metadata.
+// Client-side feedback only; the server enforces actual byte limits and file signatures.
 export function validateFileSelection(files) {
   if (!Array.isArray(files)) return ['Некорректный список файлов.'];
   if (files.length > UPLOAD_POLICY.maxFiles) {
@@ -28,10 +27,10 @@ export function validateFileSelection(files) {
     }
     if (file.size === 0) errors.push('Файл пуст: ' + name);
     if (file.size > UPLOAD_POLICY.maxFileBytes) {
-      errors.push('Файл больше 50 МБ: ' + name);
+      errors.push('Файл больше 25 МБ: ' + name);
     }
     total += file.size;
   }
-  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 250 МБ.');
+  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 18 МБ.');
   return [...new Set(errors)];
 }

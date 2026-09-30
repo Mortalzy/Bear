@@ -54,7 +54,7 @@ export function RequestForm({ onOpenPrivacy }) {
     <div className={`${styles.dropzone} ${dragging ? styles.dragging : ''}`} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(Array.from(event.dataTransfer.files)); }}>
       <input ref={fileInput} id="project-files" name="files" type="file" multiple accept={UPLOAD_POLICY.extensions.join(',')} onChange={(event) => { addFiles(Array.from(event.target.files || [])); event.target.value = ''; }} aria-describedby="file-help form-errors" className={styles.fileInput} />
       <label htmlFor="project-files" className={styles.uploadLabel}><Icon name="upload" size={23} /><span><strong>Прикрепить файлы</strong><span>или перетащите их сюда</span></span><Icon name="plus" size={20} /></label>
-      <p id="file-help">До {UPLOAD_POLICY.maxFiles} файлов · до 50 МБ каждый<br />DWG, DXF, STEP, PDF, JPG</p>
+      <p id="file-help">До {UPLOAD_POLICY.maxFiles} файлов · не более 25 МБ каждый · всего не более 18 МБ<br />DWG, DXF, STEP, PDF, JPG</p>
     </div>
     {files.length > 0 && <ul className={styles.files}>{files.map((file, index) => <li key={`${file.name}-${file.lastModified}`}><span>{file.name}<small>{(file.size / 1_000_000).toFixed(2)} МБ</small></span><button type="button" aria-label={`Удалить ${file.name}`} onClick={() => { setFiles(files.filter((_, i) => i !== index)); setErrors([]); setSent(false); }}><Icon name="close" size={17} /></button></li>)}</ul>}
     <div id="form-errors" role="alert">{errors.map((error) => <p key={error} className={styles.error}>{error}</p>)}</div>

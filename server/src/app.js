@@ -1,32 +1,28 @@
 import express from 'express';
 import multer from 'multer';
 import nodemailer from 'nodemailer';
-import { randomBytes, randomUUID, createHash } from 'node:crypto';
-import { createReadStream, mkdirSync } from 'node:fs';
-import { readFile, readdir, rm, stat, writeFile, open, mkdir } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdirSync } from 'node:fs';
+import { readdir, rm, stat, open, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { UPLOAD_POLICY, validateFileSelection } from '@bear/shared';
 
 const DAY = 86_400_000;
-const RETENTION_DAYS = 30;
-// Mail.ru stores ordinary attachments up to 25 MB; reserve room for MIME/base64 overhead.
-const MAX_EMAIL_ATTACHMENT_BYTES = 15_000_000;
+const INCOMPLETE_UPLOAD_DAYS = 1;
 const reply = (res, status, code, message) => res.status(status).json({ error: { code, message } });
-const safeName = (name) => path.basename(name.replaceAll('\\', '/')).replace(/[\r\n\x00-\x1f\x7f]/g, '').slice(0, 150) || 'file';
+const safeName = (name) => {
+  // Multipart filename parameters are commonly decoded as Latin-1 by Busboy.
+  const decoded = Buffer.from(name, 'latin1').toString('utf8');
+  const filename = decoded.includes('\uFFFD') ? name : decoded;
+  return path.basename(filename.replaceAll('\\', '/')).replace(/[\r\n\x00-\x1f\x7f]/g, '').slice(0, 150) || 'file';
+};
 
 function configuration(env) {
-  const base = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
-  let validBase = false;
-  try {
-    const url = new URL(base);
-    validBase = !url.username && !url.password && !url.search && !url.hash &&
-      (url.protocol === 'https:' || (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)));
-  } catch { /* Disabled until configured. */ }
   const port = Number(env.SMTP_PORT ?? 465);
-  return { base, port, host: env.SMTP_HOST, user: env.SMTP_USER, password: env.SMTP_PASSWORD,
+  return { port, host: env.SMTP_HOST, user: env.SMTP_USER, password: env.SMTP_PASSWORD,
     recipient: env.COMPANY_EMAIL, root: path.resolve(env.UPLOAD_DIR ?? fileURLToPath(new URL('../storage', import.meta.url))),
-    ready: Boolean(validBase && env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD && env.COMPANY_EMAIL &&
+    ready: Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD && env.COMPANY_EMAIL &&
       Number.isInteger(port) && port > 0 && port <= 65535) };
 }
 
@@ -63,7 +59,7 @@ async function cleanExpired(root) {
     if (!entry.isDirectory() || !/^[0-9a-f-]{36}$/.test(entry.name)) continue;
     const directory = path.join(root, entry.name);
     try {
-      if (Date.now() - (await stat(directory)).mtimeMs > RETENTION_DAYS * DAY) await rm(directory, { recursive: true, force: true });
+      if (Date.now() - (await stat(directory)).mtimeMs > INCOMPLETE_UPLOAD_DAYS * DAY) await rm(directory, { recursive: true, force: true });
     } catch (error) { if (error.code !== 'ENOENT') console.error('Upload cleanup failed:', error.code); }
   }
 }
@@ -113,35 +109,18 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
       const problems = validateFileSelection(files.map((file) => ({ name: file.originalname, size: file.size })));
       if (problems.length) return reply(res, 400, 'INVALID_FILES', problems.join(' '));
       for (const file of files) if (!await validSignature(file)) return reply(res, 400, 'INVALID_FILES', 'Формат файла не соответствует расширению: ' + safeName(file.originalname));
-      const attachments = [];
-      const entries = [];
-      let attachmentBytes = 0;
-      for (const file of files) {
-        if (attachmentBytes + file.size <= MAX_EMAIL_ATTACHMENT_BYTES) {
-          attachments.push({ filename: safeName(file.originalname), path: file.path, contentType: 'application/octet-stream' });
-          attachmentBytes += file.size;
-        } else {
-          const token = randomBytes(32).toString('hex');
-          entries.push({ id: file.filename, name: safeName(file.originalname), size: file.size,
-            tokenHash: createHash('sha256').update(token).digest('hex'), token });
-        }
-      }
-      if (entries.length) await writeFile(path.join(directory, 'metadata.json'), JSON.stringify({ expiresAt: now() + RETENTION_DAYS * DAY,
-        files: entries.map(({ token, ...file }) => file) }), { mode: 0o600, flag: 'wx' });
-      const links = entries.map((file) => `${file.name} (${(file.size / 1_000_000).toFixed(2)} МБ): ${config.base}/api/files/${req.requestId}/${file.id}/${file.token}`);
-      await mailer.sendMail({ from: config.user, to: config.recipient, replyTo: req.body.email,
+      const attachments = files.map((file) => ({ filename: safeName(file.originalname), path: file.path,
+        contentType: 'application/octet-stream' }));
+      const result = await mailer.sendMail({ from: config.user, to: config.recipient, replyTo: req.body.email,
         subject: 'Новая заявка с сайта BEAR',
-        text: `Новая заявка BEAR\n\nИмя: ${req.body.name.trim()}\nТелефон: ${req.body.phone}\nEmail: ${req.body.email}\n\nОписание:\n${req.body.description.trim()}\n\nВложения:\n${attachments.length ? attachments.map((file) => file.filename).join('\n') : 'Нет'}\n\nКрупные файлы (ссылки действуют ${RETENTION_DAYS} дней):\n${links.length ? links.join('\n') : 'Нет'}\n`,
+        textEncoding: 'base64',
+        text: `Новая заявка BEAR\n\nИмя: ${req.body.name.trim().normalize('NFC')}\nТелефон: ${req.body.phone}\nEmail: ${req.body.email}\n\nОписание:\n${req.body.description.trim().normalize('NFC')}\n\nФайлы во вложении:\n${attachments.length ? attachments.map((file) => file.filename).join('\n') : 'Нет'}\n`,
         attachments });
+      if (result?.accepted && !result.accepted.includes(config.recipient)) throw new Error('Recipient rejected');
       delivered = true;
-      // Nodemailer consumes attachment paths during sendMail; remove copies once SMTP accepts.
-      if (entries.length) {
-        await Promise.all(attachments.map((file) => rm(file.path, { force: true })))
-          .catch((error) => console.error('Failed to remove sent attachment:', error.code));
-      } else {
-        await rm(directory, { recursive: true, force: true })
-          .catch((error) => console.error('Failed to remove sent attachments:', error.code));
-      }
+      // Nodemailer finishes reading attachment paths before sendMail resolves.
+      await rm(directory, { recursive: true, force: true })
+        .catch((error) => console.error('Failed to remove sent attachments:', error.code));
       res.status(201).json({ id: req.requestId, message: 'Заявка отправлена.' });
     } catch (error) {
       if (error instanceof multer.MulterError) reply(res, 400, 'INVALID_UPLOAD', 'Не удалось принять файлы: превышен лимит размера или количества.');
@@ -153,22 +132,6 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     }
   });
 
-  app.get('/api/files/:requestId/:fileId/:token', async (req, res) => {
-    res.set('Cache-Control', 'no-store');
-    const { requestId, fileId, token } = req.params;
-    if (![requestId, fileId].every((id) => /^[0-9a-f-]{36}$/.test(id)) || !/^[0-9a-f]{64}$/.test(token)) return reply(res, 404, 'NOT_FOUND', 'Файл не найден.');
-    try {
-      const directory = path.join(config.root, requestId);
-      const metadata = JSON.parse(await readFile(path.join(directory, 'metadata.json'), 'utf8'));
-      const file = metadata.files.find((item) => item.id === fileId && item.tokenHash === createHash('sha256').update(token).digest('hex'));
-      if (!file || metadata.expiresAt < now()) return reply(res, 404, 'NOT_FOUND', 'Срок действия ссылки истёк или файл не найден.');
-      const filePath = path.join(directory, fileId); await stat(filePath);
-      res.set('Content-Type', 'application/octet-stream'); res.set('X-Content-Type-Options', 'nosniff');
-      res.set('Content-Disposition', `attachment; filename="file${path.extname(file.name)}"; filename*=UTF-8''${encodeURIComponent(file.name)}`);
-      res.set('Content-Length', String(file.size));
-      createReadStream(filePath).on('error', () => res.destroy()).pipe(res);
-    } catch { if (!res.headersSent) reply(res, 404, 'NOT_FOUND', 'Файл не найден.'); }
-  });
   app.use((_req, res) => reply(res, 404, 'NOT_FOUND', 'Адрес не найден.'));
   app.use((error, _req, res, next) => { if (res.headersSent) return next(error);
     console.error('Unhandled request error:', error.code ?? 'UNKNOWN'); reply(res, 500, 'INTERNAL_ERROR', 'Ошибка сервера.'); });
