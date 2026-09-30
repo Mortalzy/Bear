@@ -10,6 +10,8 @@ import { UPLOAD_POLICY, validateFileSelection } from '@bear/shared';
 
 const DAY = 86_400_000;
 const RETENTION_DAYS = 30;
+// Mail.ru stores ordinary attachments up to 25 MB; reserve room for MIME/base64 overhead.
+const MAX_EMAIL_ATTACHMENT_BYTES = 15_000_000;
 const reply = (res, status, code, message) => res.status(status).json({ error: { code, message } });
 const safeName = (name) => path.basename(name.replaceAll('\\', '/')).replace(/[\r\n\x00-\x1f\x7f]/g, '').slice(0, 150) || 'file';
 
@@ -111,16 +113,35 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
       const problems = validateFileSelection(files.map((file) => ({ name: file.originalname, size: file.size })));
       if (problems.length) return reply(res, 400, 'INVALID_FILES', problems.join(' '));
       for (const file of files) if (!await validSignature(file)) return reply(res, 400, 'INVALID_FILES', 'Формат файла не соответствует расширению: ' + safeName(file.originalname));
-      const entries = files.map((file) => { const token = randomBytes(32).toString('hex');
-        return { id: file.filename, name: safeName(file.originalname), size: file.size,
-          tokenHash: createHash('sha256').update(token).digest('hex'), token }; });
+      const attachments = [];
+      const entries = [];
+      let attachmentBytes = 0;
+      for (const file of files) {
+        if (attachmentBytes + file.size <= MAX_EMAIL_ATTACHMENT_BYTES) {
+          attachments.push({ filename: safeName(file.originalname), path: file.path, contentType: 'application/octet-stream' });
+          attachmentBytes += file.size;
+        } else {
+          const token = randomBytes(32).toString('hex');
+          entries.push({ id: file.filename, name: safeName(file.originalname), size: file.size,
+            tokenHash: createHash('sha256').update(token).digest('hex'), token });
+        }
+      }
       if (entries.length) await writeFile(path.join(directory, 'metadata.json'), JSON.stringify({ expiresAt: now() + RETENTION_DAYS * DAY,
         files: entries.map(({ token, ...file }) => file) }), { mode: 0o600, flag: 'wx' });
       const links = entries.map((file) => `${file.name} (${(file.size / 1_000_000).toFixed(2)} МБ): ${config.base}/api/files/${req.requestId}/${file.id}/${file.token}`);
       await mailer.sendMail({ from: config.user, to: config.recipient, replyTo: req.body.email,
         subject: 'Новая заявка с сайта BEAR',
-        text: `Новая заявка BEAR\n\nИмя: ${req.body.name.trim()}\nТелефон: ${req.body.phone}\nEmail: ${req.body.email}\n\nОписание:\n${req.body.description.trim()}\n\nФайлы (ссылки действуют ${RETENTION_DAYS} дней):\n${links.length ? links.join('\n') : 'Не приложены'}\n` });
+        text: `Новая заявка BEAR\n\nИмя: ${req.body.name.trim()}\nТелефон: ${req.body.phone}\nEmail: ${req.body.email}\n\nОписание:\n${req.body.description.trim()}\n\nВложения:\n${attachments.length ? attachments.map((file) => file.filename).join('\n') : 'Нет'}\n\nКрупные файлы (ссылки действуют ${RETENTION_DAYS} дней):\n${links.length ? links.join('\n') : 'Нет'}\n`,
+        attachments });
       delivered = true;
+      // Nodemailer consumes attachment paths during sendMail; remove copies once SMTP accepts.
+      if (entries.length) {
+        await Promise.all(attachments.map((file) => rm(file.path, { force: true })))
+          .catch((error) => console.error('Failed to remove sent attachment:', error.code));
+      } else {
+        await rm(directory, { recursive: true, force: true })
+          .catch((error) => console.error('Failed to remove sent attachments:', error.code));
+      }
       res.status(201).json({ id: req.requestId, message: 'Заявка отправлена.' });
     } catch (error) {
       if (error instanceof multer.MulterError) reply(res, 400, 'INVALID_UPLOAD', 'Не удалось принять файлы: превышен лимит размера или количества.');
