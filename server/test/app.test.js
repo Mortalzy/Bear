@@ -21,7 +21,8 @@ test('API is reachable but never reports a submitted request before mail is conn
 
   const config = await fetch(url + '/api/config').then((r) => r.json());
   assert.equal(config.requestsEnabled, false);
-  assert.equal(config.uploads.maxFileBytes, 50_000_000);
+  assert.equal(config.uploads.maxFileBytes, 25_000_000);
+  assert.equal(config.uploads.maxTotalBytes, 18_000_000);
   assert.equal(config.uploads.maxFiles, 5);
 
   const response = await fetch(url + '/api/requests', { method: 'POST' });
