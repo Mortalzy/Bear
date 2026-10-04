@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { mediaUrl } from '../utils/mediaUrl.js';
 import styles from './ServiceCarousel.module.css';
 
 export function ServiceCarousel({ title, slides }) {
@@ -52,8 +53,8 @@ export function ServiceCarousel({ title, slides }) {
         <video
           key={activeIndex}
           className={`${styles.media} ${styles.video}`}
-          src={`/videos/${slide.video}`}
-          poster={slide.poster ? `/images/${slide.poster}.png` : undefined}
+          src={mediaUrl(slide.video)}
+          poster={slide.poster ? mediaUrl(slide.poster) : undefined}
           aria-label={slide.alt}
           autoPlay
           muted
@@ -69,7 +70,7 @@ export function ServiceCarousel({ title, slides }) {
       ) : (
         <img
           className={styles.media}
-          src={`/images/${slide.image}.png`}
+          src={mediaUrl(slide.image)}
           alt={slide.alt}
           loading="lazy"
           decoding="async"

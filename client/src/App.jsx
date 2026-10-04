@@ -3,6 +3,7 @@ import { RequestForm } from './features/request/RequestForm.jsx';
 import { Icon } from './components/Icon.jsx';
 import { ServiceCarousel } from './components/ServiceCarousel.jsx';
 import { company, services, steps } from './data/site.js';
+import { mediaUrl } from './utils/mediaUrl.js';
 import styles from './App.module.css';
 
 const navigation = [
@@ -31,11 +32,11 @@ function Action({ children, href = '#request', dark = false, className = '' }) {
   );
 }
 
-function Photo({ name, alt, className = '', eager = false }) {
+function Photo({ path, alt, className = '', eager = false }) {
   return (
     <img
       className={className}
-      src={`/images/${name}.png`}
+      src={mediaUrl(path)}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
@@ -162,8 +163,8 @@ export function App() {
 
           <div className={styles.heroVisual}>
             <Photo
-              name="hero"
-              alt="Корпус катера из стеклопластика в производственном цехе МЕДВЕДЬ"
+              path="Фото производства/Улучшенные/Чёткая мастерская с лодкой и бочками-9.png"
+              alt="Производственная мастерская с лодкой и материалами"
               eager
             />
             <div className={styles.heroImageLabel}>
@@ -173,7 +174,7 @@ export function App() {
             </div>
 
             <a href="#production" className={styles.heroBadge} aria-label="О нашем производстве">
-              <span className={styles.heroLogo} aria-hidden="true" />
+              <img className={styles.heroLogo} src="/images/2.png" alt="" />
             </a>
           </div>
         </section>
@@ -291,7 +292,10 @@ export function App() {
 
           <div className={styles.productionGrid}>
             <figure className={styles.workshop}>
-              <Photo name="workshop" alt="Общий вид производственного цеха МЕДВЕДЬ" />
+              <Photo
+                path="Фото производства/Улучшенные/Чёткий кадр рабочей мастерской-6.png"
+                alt="Общий вид производственной мастерской"
+              />
               <figcaption>
                 <span>ПРОИЗВОДСТВЕННЫЙ ЦЕХ / САМАРА</span>
                 <Icon size={23} />
@@ -299,12 +303,18 @@ export function App() {
             </figure>
 
             <figure>
-              <Photo name="boat" alt="Готовый корпус изделия из стеклопластика" />
+              <Photo
+                path="Готовая продукция/Улучшенные/1.png"
+                alt="Готовое изделие из стеклопластика"
+              />
               <figcaption>ОТ МОДЕЛИ — К ГОТОВОЙ ФОРМЕ</figcaption>
             </figure>
 
             <figure>
-              <Photo name="tooling" alt="Матрицы и производственная оснастка в цехе" />
+              <Photo
+                path="Матрица и оснастка/Улучшенные/1.png"
+                alt="Матрица и производственная оснастка"
+              />
               <figcaption>МАТРИЦЫ И ОСНАСТКА</figcaption>
             </figure>
           </div>
