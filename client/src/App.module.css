@@ -117,6 +117,21 @@
   padding: 12px 4px;
 }
 
+.themeIcon {
+  animation: themeIconIn .3s ease both;
+}
+
+@keyframes themeIconIn {
+  from {
+    opacity: 0;
+    transform: rotate(-25deg) scale(.75);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
 .menuToggle {
   display: none;
   background: none;
@@ -1138,4 +1153,25 @@
   .dialog h2 {
     font-size: 28px;
   }
+}
+
+.header,
+.mobileNav,
+.serviceCard,
+.customCard,
+.partner,
+.partnerCta,
+.productionGrid figure,
+.dialog {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease;
+}
+
+.serviceNumber,
+.serviceCopy > p,
+.sectionHeading > p,
+.footerTop p,
+.footerContacts small,
+.footerBottom,
+.serviceDetails {
+  transition: color .35s ease, border-color .35s ease;
 }

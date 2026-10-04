@@ -93,7 +93,12 @@ export function App() {
             aria-label={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
             aria-pressed={theme === 'dark'}
           >
-            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={19} />
+            <Icon
+              key={theme}
+              className={styles.themeIcon}
+              name={theme === 'light' ? 'moon' : 'sun'}
+              size={19}
+            />
             <span>{theme === 'light' ? 'Тёмная' : 'Светлая'}</span>
           </button>
 
