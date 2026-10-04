@@ -90,7 +90,7 @@ export const services = [
   },
   {
     id: '04',
-    title: 'Репликация\nизделий',
+    title: 'Готовая\nпродукция',
     gallery: [
       {
         image: 'Готовая продукция/Улучшенные/1.png',
