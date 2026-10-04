@@ -83,7 +83,7 @@ export function ServiceCarousel({ title, slides }) {
             className={styles.arrow}
             type="button"
             onClick={() => move(-1)}
-            aria-label={`Предыдущее фото: ${label}`}
+            aria-label={`Предыдущий слайд: ${label}`}
           >
             <span aria-hidden="true">←</span>
           </button>
@@ -94,7 +94,7 @@ export function ServiceCarousel({ title, slides }) {
             className={styles.arrow}
             type="button"
             onClick={() => move(1)}
-            aria-label={`Следующее фото: ${label}`}
+            aria-label={`Следующий слайд: ${label}`}
           >
             <span aria-hidden="true">→</span>
           </button>

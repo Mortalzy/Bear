@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { RequestForm } from './features/request/RequestForm.jsx';
 import { Icon } from './components/Icon.jsx';
 import { ServiceCarousel } from './components/ServiceCarousel.jsx';
-import { company, services, steps } from './data/site.js';
+import { company, productionGalleries, services, steps } from './data/site.js';
 import { mediaUrl } from './utils/mediaUrl.js';
 import styles from './App.module.css';
 
@@ -163,7 +163,7 @@ export function App() {
 
           <div className={styles.heroVisual}>
             <Photo
-              path="Фото производства/Улучшенные/Чёткая мастерская с лодкой и бочками-9.png"
+              path="Фото производства/9.png"
               alt="Производственная мастерская с лодкой и материалами"
               eager
             />
@@ -174,7 +174,7 @@ export function App() {
             </div>
 
             <a href="#production" className={styles.heroBadge} aria-label="О нашем производстве">
-              <img className={styles.heroLogo} src="/images/2.png" alt="" />
+              <img className={styles.heroLogo} src="/images/yellow-logo__black-phone.png" alt="" />
             </a>
           </div>
         </section>
@@ -291,32 +291,12 @@ export function App() {
           </div>
 
           <div className={styles.productionGrid}>
-            <figure className={styles.workshop}>
-              <Photo
-                path="Фото производства/Улучшенные/Чёткий кадр рабочей мастерской-6.png"
-                alt="Общий вид производственной мастерской"
-              />
-              <figcaption>
-                <span>ПРОИЗВОДСТВЕННЫЙ ЦЕХ / САМАРА</span>
-                <Icon size={23} />
-              </figcaption>
-            </figure>
-
-            <figure>
-              <Photo
-                path="Готовая продукция/Улучшенные/1.png"
-                alt="Готовое изделие из стеклопластика"
-              />
-              <figcaption>ОТ МОДЕЛИ — К ГОТОВОЙ ФОРМЕ</figcaption>
-            </figure>
-
-            <figure>
-              <Photo
-                path="Матрица и оснастка/Улучшенные/1.png"
-                alt="Матрица и производственная оснастка"
-              />
-              <figcaption>МАТРИЦЫ И ОСНАСТКА</figcaption>
-            </figure>
+            {productionGalleries.map(({ id, title, caption, slides }) => (
+              <figure key={id}>
+                <ServiceCarousel title={title} slides={slides} />
+                <figcaption>{caption}</figcaption>
+              </figure>
+            ))}
           </div>
         </section>
 

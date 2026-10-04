@@ -451,51 +451,19 @@
 
 .productionGrid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
 }
 
 .productionGrid figure {
-  position: relative;
-  min-height: 180px;
-  overflow: hidden;
+  min-width: 0;
   background: var(--surface);
 }
 
-.productionGrid .workshop {
-  grid-row: span 2;
-}
-
-.productionGrid img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(.35);
-  aspect-ratio: 2.6;
-  transition: transform .5s;
-}
-
-.productionGrid .workshop img {
-  aspect-ratio: 1.2;
-}
-
-.productionGrid figure:hover img {
-  transform: scale(1.025);
-}
-
 .productionGrid figcaption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 35px 24px 21px;
-  background: linear-gradient(transparent, #000b);
-  color: white;
-  font-size: 9px;
+  padding: 17px 20px;
+  color: var(--text);
+  font-size: 10px;
   letter-spacing: 1px;
 }
 
@@ -909,7 +877,10 @@
   }
   .productionGrid {
     gap: 16px;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .productionGrid figure:last-child {
+    grid-column: 1 / -1;
   }
   .partners {
     padding-top: 0;
@@ -1096,14 +1067,8 @@
   .productionGrid {
     grid-template-columns: 1fr;
   }
-  .productionGrid .workshop {
-    grid-row: auto;
-  }
-  .productionGrid .workshop img {
-    aspect-ratio: 1.25;
-  }
-  .productionGrid img {
-    aspect-ratio: 1.5;
+  .productionGrid figure:last-child {
+    grid-column: auto;
   }
   .partners {
     padding-top: 0;
