@@ -1,15 +1,14 @@
-// Public business details go here after approval for repository publication.
 export const company = {
   name: 'BEAR',
   phones: [
     { label: '8 (919) 801-27-02', href: 'tel:+79198012702' },
     { label: '8 (917) 953-41-14', href: 'tel:+79179534114' },
   ],
-  email: '',
-  legalName: '',
-  inn: '',
-  coordinates: '',
-  mapUrl: '',
+  email: 'bear.fiberglass@mail.ru',
+  legalName: 'ИП Пиронен Герман Сергеевич',
+  inn: '165027223815',
+  coordinates: '53.134691, 50.230123',
+  mapUrl: 'https://www.google.com/maps/search/?api=1&query=53.134691%2C50.230123',
 };
 
 export const services = [
