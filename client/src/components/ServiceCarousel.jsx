@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react';
 import styles from './ServiceCarousel.module.css';
 
-export function ServiceCarousel({ title, images }) {
+export function ServiceCarousel({ title, slides }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const touchStart = useRef(null);
   const label = title.replace(/\s+/g, ' ');
+  const slide = slides[activeIndex];
 
   function move(direction) {
-    setActiveIndex((index) => (index + direction + images.length) % images.length);
+    setActiveIndex((index) => (index + direction + slides.length) % slides.length);
   }
 
   function handleTouchStart(event) {
@@ -41,21 +42,41 @@ export function ServiceCarousel({ title, images }) {
       className={styles.carousel}
       role="region"
       aria-roledescription="карусель"
-      aria-label={`Фотографии: ${label}`}
+      aria-label={`Фото и видео: ${label}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <img
-        className={styles.image}
-        src={`/images/${images[activeIndex].image}.png`}
-        alt={images[activeIndex].alt}
-        loading="lazy"
-        decoding="async"
-      />
+      {slide.video ? (
+        <video
+          key={activeIndex}
+          className={`${styles.media} ${styles.video}`}
+          src={`/videos/${slide.video}`}
+          poster={slide.poster ? `/images/${slide.poster}.png` : undefined}
+          aria-label={slide.alt}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
+          controlsList="nodownload noplaybackrate nofullscreen"
+          tabIndex={-1}
+          onContextMenu={(event) => event.preventDefault()}
+        />
+      ) : (
+        <img
+          className={styles.media}
+          src={`/images/${slide.image}.png`}
+          alt={slide.alt}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
 
-      {images.length > 1 && (
+      {slides.length > 1 && (
         <div className={styles.controls}>
           <button
             className={styles.arrow}
@@ -66,7 +87,7 @@ export function ServiceCarousel({ title, images }) {
             <span aria-hidden="true">←</span>
           </button>
           <span className={styles.counter} aria-live="polite" aria-atomic="true">
-            {activeIndex + 1} / {images.length}
+            {activeIndex + 1} / {slides.length}
           </span>
           <button
             className={styles.arrow}

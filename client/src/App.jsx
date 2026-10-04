@@ -74,7 +74,6 @@ export function App() {
       <header className={styles.header}>
         <a href="#top" className={styles.brand} aria-label="BEAR — главная">
           МЕДВЕДЬ
-          <img src="/images/bear-logo.png" alt="" width="38" height="38" />
         </a>
 
         <nav aria-label="Главная навигация" className={styles.desktopNav}>
@@ -173,15 +172,8 @@ export function App() {
               РЕАЛЬНОЕ ПРОИЗВОДСТВО.
             </div>
 
-            <a href="#production" className={styles.heroBadge}>
-              <span>
-                Форма.
-                <br />
-                Материал.
-                <br />
-                Результат.
-              </span>
-              <Icon size={32} />
+            <a href="#production" className={styles.heroBadge} aria-label="О нашем производстве">
+              <span className={styles.heroLogo} aria-hidden="true" />
             </a>
           </div>
         </section>
@@ -221,7 +213,7 @@ export function App() {
                   <p>{service.description}</p>
                 </div>
 
-                <ServiceCarousel title={service.title} images={service.gallery} />
+                <ServiceCarousel title={service.title} slides={service.gallery} />
 
                 <details className={styles.serviceDetails}>
                   <summary>
@@ -403,7 +395,6 @@ export function App() {
           <div>
             <a className={styles.brand} href="#top" aria-label="BEAR — главная">
               МЕДВЕДЬ
-              <img src="/images/bear-logo.png" alt="" width="47" height="47" />
             </a>
             <p>
               Производство из стеклопластика.
