@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { RequestForm } from './features/request/RequestForm.jsx';
 import { Icon } from './components/Icon.jsx';
+import { ServiceCarousel } from './components/ServiceCarousel.jsx';
 import { company, services, steps } from './data/site.js';
 import styles from './App.module.css';
 
@@ -220,10 +221,7 @@ export function App() {
                   <p>{service.description}</p>
                 </div>
 
-                <Photo
-                  name={service.image}
-                  alt={`${service.title.replace('\n', ' ')} — пример работы МЕДВЕДЬ`}
-                />
+                <ServiceCarousel title={service.title} images={service.gallery} />
 
                 <details className={styles.serviceDetails}>
                   <summary>

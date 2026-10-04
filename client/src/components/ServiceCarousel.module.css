@@ -1,0 +1,65 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #c4c5c2;
+  touch-action: pan-y;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.8;
+  object-fit: cover;
+  filter: grayscale(.85);
+  transition: filter .3s;
+}
+
+.carousel:hover .image,
+.carousel:focus-within .image {
+  filter: grayscale(0);
+}
+
+.controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px;
+  background: #171819d9;
+  color: #fff;
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.arrow:hover,
+.arrow:focus-visible {
+  background: #ffffff30;
+}
+
+.counter {
+  min-width: 38px;
+  text-align: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    transition: none;
+  }
+}

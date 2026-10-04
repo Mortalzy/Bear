@@ -352,18 +352,6 @@
   max-width: 310px;
 }
 
-.serviceCard > img {
-  width: 100%;
-  aspect-ratio: 1.8;
-  object-fit: cover;
-  filter: grayscale(.85);
-  transition: filter .3s;
-}
-
-.serviceCard:hover > img {
-  filter: grayscale(0);
-}
-
 .serviceDetails {
   border-top: 1px solid var(--border);
   font-size: 12px;
@@ -1070,9 +1058,6 @@
   .serviceCopy > p {
     font-size: 13px;
     max-width: 100%;
-  }
-  .serviceCard > img {
-    aspect-ratio: 1.8;
   }
   .serviceNumber {
     font-size: 14px;
