@@ -374,22 +374,20 @@ export function App() {
               <br className={styles.desktopBreak} /> начнём с вашей задачи.
             </p>
 
-            {company.email ? (
+            {company.email && (
               <a href={`mailto:${company.email}`} className={styles.contactEmail}>
                 {company.email}
                 <Icon size={22} />
               </a>
-            ) : (
-              <span className={styles.contactEmail}>Email компании</span>
             )}
 
-            {company.phone ? (
-              <a href={company.phoneHref} className={styles.contactPhone}>
-                {company.phone}
-              </a>
-            ) : (
-              <span className={styles.contactPhone}>Телефон компании</span>
-            )}
+            <div className={styles.contactPhones} aria-label="Телефоны компании">
+              {company.phones.map((phone) => (
+                <a key={phone.href} href={phone.href} className={styles.contactPhone}>
+                  {phone.label}
+                </a>
+              ))}
+            </div>
 
             <span className={styles.requestFootnote}>
               ОТ ИДЕИ ДО ГОТОВОГО ИЗДЕЛИЯ <Icon size={17} />
@@ -423,18 +421,21 @@ export function App() {
           </nav>
 
           <div className={styles.footerContacts}>
-            {company.phone && <a href={company.phoneHref}>{company.phone}</a>}
+            <span className={styles.footerLabel}>КОНТАКТЫ</span>
+            {company.phones.map((phone) => (
+              <a key={phone.href} href={phone.href}>
+                {phone.label}
+              </a>
+            ))}
             {company.email && <a href={`mailto:${company.email}`}>{company.email}</a>}
-            {company.mapUrl ? (
-              <a href={company.mapUrl} target="_blank" rel="noreferrer">
+            {company.mapUrl && (
+              <a className={styles.mapLink} href={company.mapUrl} target="_blank" rel="noreferrer">
                 <Icon name="pin" size={18} />
-                Самара · Открыть на карте
+                Производство · точка на карте
                 <Icon size={16} />
               </a>
-            ) : (
-              <span>Контакты и карта будут добавлены</span>
             )}
-            {company.coordinates && <small>{company.coordinates}</small>}
+            {company.coordinates && <small>Координаты: {company.coordinates}</small>}
           </div>
         </div>
 
@@ -447,7 +448,7 @@ export function App() {
             </span>
           )}
           <button type="button" onClick={() => privacy.current?.showModal()}>
-            Персональные данные
+            Обработка данных
           </button>
           <a href="#top" aria-label="Наверх">
             <Icon size={19} />
@@ -472,19 +473,20 @@ export function App() {
             <Icon name="close" />
           </button>
 
-          <p className={styles.eyebrow}>ДЕМОНСТРАЦИОННАЯ ВЕРСИЯ</p>
-          <h2>Персональные данные</h2>
+          <p className={styles.eyebrow}>ИНФОРМАЦИЯ ДЛЯ ЗАЯВИТЕЛЕЙ</p>
+          <h2>Обработка данных</h2>
           <p>
-            Форма сейчас работает локально: имя, телефон, email, описание и выбранные файлы
-            не отправляются на сервер и не сохраняются после перезагрузки страницы.
+            При отправке формы имя, телефон, email, описание проекта и прикреплённые файлы
+            передаются на сервер сайта и направляются на почту компании для рассмотрения заявки
+            и связи с вами.
           </p>
           <p>
-            В браузере сохраняется только выбранная тема оформления. Контактные данные компании
-            будут добавлены перед публикацией сайта.
+            По вопросам обработки данных можно связаться с компанией по телефонам,
+            указанным в разделе контактов.
           </p>
           <p>
-            Перед запуском онлайн-заявок здесь будет размещена согласованная политика обработки
-            персональных данных.
+            В браузере сохраняется только выбранная тема оформления. Если заявку не удалось
+            отправить, форма покажет ошибку.
           </p>
 
           <button className={styles.action} type="button" onClick={() => privacy.current.close()}>

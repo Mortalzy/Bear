@@ -1,9 +1,10 @@
-// Fill these fields locally when you are ready to publish company details.
-// Keep secrets and personal data out of Git until their publication is approved.
+// Public business details go here after approval for repository publication.
 export const company = {
   name: 'BEAR',
-  phone: '',
-  phoneHref: '',
+  phones: [
+    { label: '8 (919) 801-27-02', href: 'tel:+79198012702' },
+    { label: '8 (917) 953-41-14', href: 'tel:+79179534114' },
+  ],
   email: '',
   legalName: '',
   inn: '',

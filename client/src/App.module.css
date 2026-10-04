@@ -621,6 +621,12 @@
   font-size: 19px;
 }
 
+.contactPhones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
 .requestFootnote {
   display: flex;
   align-items: center;
@@ -665,20 +671,33 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
   font-size: 15px;
 }
 
-.footerContacts > a:nth-child(3) {
+.footerLabel {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.footerContacts .mapLink {
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 12px;
+  margin-top: 8px;
 }
 
 .footerContacts small {
   color: var(--muted);
   font-size: 10px;
+}
+
+.footerContacts a,
+.contactPhones a {
+  overflow-wrap: anywhere;
 }
 
 .footerBottom {
