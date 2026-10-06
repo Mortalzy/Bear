@@ -74,6 +74,7 @@ export function App() {
 
       <header className={styles.header}>
         <a href="#top" className={styles.brand} aria-label="BEAR — главная">
+          <img className={styles.brandLogo} src="/images/black-logo__transparent.png" alt="" />
           МЕДВЕДЬ
         </a>
 
@@ -361,19 +362,32 @@ export function App() {
               <br className={styles.desktopBreak} /> начнём с вашей задачи.
             </p>
 
-            {company.email && (
-              <a href={`mailto:${company.email}`} className={styles.contactEmail}>
-                {company.email}
-                <Icon size={22} />
-              </a>
-            )}
-
-            <div className={styles.contactPhones} aria-label="Телефоны компании">
-              {company.phones.map((phone) => (
-                <a key={phone.href} href={phone.href} className={styles.contactPhone}>
-                  {phone.label}
+            <div className={styles.requestContacts}>
+              <div className={styles.contactRow}>
+                <span>ИП</span>
+                <strong>{company.legalName.replace(/^ИП\s*/, '')}</strong>
+              </div>
+              <div className={styles.contactRow}>
+                <span>ИНН</span>
+                <strong>{company.inn}</strong>
+              </div>
+              <div className={styles.contactRow}>
+                <span>Телефоны</span>
+                <div className={styles.contactPhones}>
+                  {company.phones.map((phone) => (
+                    <a key={phone.href} href={phone.href} className={styles.contactPhone}>
+                      {phone.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.contactRow}>
+                <span>Электронный адрес</span>
+                <a href={`mailto:${company.email}`} className={styles.contactEmail}>
+                  {company.email}
+                  <Icon size={20} />
                 </a>
-              ))}
+              </div>
             </div>
 
             <span className={styles.requestFootnote}>
@@ -389,6 +403,7 @@ export function App() {
         <div className={styles.footerTop}>
           <div>
             <a className={styles.brand} href="#top" aria-label="BEAR — главная">
+              <img className={styles.brandLogo} src="/images/black-logo__transparent.png" alt="" />
               МЕДВЕДЬ
             </a>
             <p>

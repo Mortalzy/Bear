@@ -9,7 +9,7 @@
   left: 16px;
   top: -100px;
   z-index: 99;
-  background: var(--yellow);
+  background: var(--orange);
   color: #101112;
   padding: 16px;
 }
@@ -34,7 +34,19 @@
   letter-spacing: -2.5px;
   line-height: 1;
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 9px;
+}
+
+.brandLogo {
+  width: .86em;
+  height: .86em;
+  object-fit: contain;
+  flex: none;
+}
+
+:global([data-theme='dark']) .brandLogo {
+  filter: invert(1);
 }
 
 .desktopNav {
@@ -72,7 +84,7 @@
 }
 
 .action {
-  background: var(--yellow);
+  background: var(--orange);
   color: #101112;
   display: inline-flex;
   align-items: center;
@@ -87,7 +99,7 @@
 }
 
 .action:hover {
-  background: #d9e900;
+  background: #e47700;
   transform: translateY(-2px);
 }
 
@@ -155,7 +167,7 @@
 .hero {
   display: grid;
   grid-template-columns: 53% 47%;
-  background: var(--yellow);
+  background: var(--orange);
   color: #101112;
   position: relative;
   min-height: 595px;
@@ -257,6 +269,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: hue-rotate(-38deg) saturate(1.2);
 }
 
 .ticker {
@@ -441,7 +454,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--yellow);
+  color: var(--orange);
   margin-bottom: 30px;
 }
 
@@ -576,16 +589,38 @@
   margin-bottom: 43px;
 }
 
+.requestContacts {
+  display: grid;
+  gap: 17px;
+}
+
+.contactRow {
+  display: grid;
+  gap: 6px;
+}
+
+.contactRow > span {
+  color: #b0b2b3;
+  font-size: 10px;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+}
+
+.contactRow strong {
+  font-size: clamp(15px, 1.45vw, 20px);
+  font-weight: 500;
+}
+
 .contactEmail {
   display: flex;
   align-items: center;
   gap: 20px;
   font-size: clamp(15px, 1.6vw, 24px);
-  margin-bottom: 19px;
+  overflow-wrap: anywhere;
 }
 
 .contactPhone {
-  font-size: 19px;
+  font-size: clamp(15px, 1.45vw, 19px);
 }
 
 .contactPhones {
@@ -600,8 +635,8 @@
   gap: 24px;
   font-size: 9px;
   letter-spacing: 1px;
-  color: var(--yellow);
-  margin-top: 60px;
+  color: var(--orange);
+  margin-top: 45px;
 }
 
 .footer {

@@ -8,7 +8,7 @@
 @import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/cyrillic-700.css';
 @import '@fontsource/inter/latin-700.css';
-:root{font-family:'Inter',sans-serif;color:#18191b;background:#fff;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;--bg:#fff;--surface:#f3f3f3;--text:#17181b;--muted:#66686c;--border:#dedee0;--yellow:#eaff00;--lilac:#dcd2fa;--ink:#101112;--on-dark:#f7f7f2;color-scheme:light}
+:root{font-family:'Inter',sans-serif;color:#18191b;background:#fff;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;--bg:#fff;--surface:#f3f3f3;--text:#17181b;--muted:#66686c;--border:#dedee0;--orange:#ff8a00;--lilac:#dcd2fa;--ink:#101112;--on-dark:#f7f7f2;color-scheme:light}
 :root[data-theme='dark']{--bg:#171819;--surface:#242527;--text:#f4f4ed;--muted:#b2b3b6;--border:#3c3e40;--lilac:#c4b5ea;color-scheme:dark;background:#171819;color:#f4f4ed}
 html,
 body {

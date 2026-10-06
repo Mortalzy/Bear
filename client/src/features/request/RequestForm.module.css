@@ -62,7 +62,7 @@
 }
 
 .dragging {
-  border-color: var(--yellow);
+  border-color: var(--orange);
   background: #26291b;
 }
 
@@ -156,7 +156,7 @@
   width: 15px;
   height: 15px;
   flex-shrink: 0;
-  accent-color: var(--yellow);
+  accent-color: var(--orange);
 }
 
 .consent button {
@@ -172,7 +172,7 @@
 
 .submit {
   border: 0;
-  background: var(--yellow);
+  background: var(--orange);
   color: #101112;
   display: flex;
   justify-content: space-between;
@@ -185,7 +185,7 @@
 }
 
 .submit:hover {
-  background: #d9e900;
+  background: #e47700;
 }
 
 .mode {
