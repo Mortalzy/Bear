@@ -296,19 +296,38 @@
 }
 
 .forestBackground {
-  --forest-overlay: rgba(255, 255, 255, .68);
+  --forest-opacity: .32;
   --muted: #4b4d51;
+  position: relative;
+  isolation: isolate;
   background-color: var(--bg);
-  background-image:
-    linear-gradient(var(--forest-overlay), var(--forest-overlay)),
-    url('./assets/forest-landscape.png');
+  transition: background-color .35s ease;
+}
+
+.forestBackground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--forest-image);
   background-size: cover;
-  background-position: center bottom;
+  background-position: center top;
   background-repeat: no-repeat;
+  opacity: var(--forest-opacity);
+  transition: opacity .35s ease;
+}
+
+.forestServices {
+  --forest-image: url('./assets/forest-services.webp');
+}
+
+.forestProduction {
+  --forest-image: url('./assets/forest-production.webp');
 }
 
 :global([data-theme='dark']) .forestBackground {
-  --forest-overlay: rgba(23, 24, 25, .8);
+  --forest-opacity: .2;
   --muted: #b2b3b6;
 }
 

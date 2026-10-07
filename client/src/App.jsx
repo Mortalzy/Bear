@@ -199,7 +199,7 @@ export function App() {
 
         <section
           id="services"
-          className={`${styles.section} ${styles.forestBackground}`}
+          className={`${styles.section} ${styles.forestBackground} ${styles.forestServices}`}
           aria-labelledby="services-title"
         >
           <div className={styles.sectionHeading}>
@@ -245,6 +245,7 @@ export function App() {
                 Начнём
                 <br />
                 с вашей
+                {' '}
                 <br />
                 идеи.
               </h3>
@@ -287,7 +288,7 @@ export function App() {
           </ol>
         </section>
 
-        <div className={styles.forestBackground}>
+        <div className={`${styles.forestBackground} ${styles.forestProduction}`}>
           <section id="production" className={styles.section} aria-labelledby="production-title">
             <div className={styles.sectionHeading}>
               <div>
@@ -319,6 +320,7 @@ export function App() {
               <p className={styles.eyebrow}>04 / СОТРУДНИЧЕСТВО</p>
               <h2 id="partners-title">
                 С нами
+                {' '}
                 <br />
                 работают
               </h2>
@@ -342,6 +344,7 @@ export function App() {
 
             <a className={styles.partnerCta} href="#request">
               Стать
+              {' '}
               <br />
               партнёром
               <Icon size={30} />
