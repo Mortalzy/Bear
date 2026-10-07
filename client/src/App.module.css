@@ -295,6 +295,23 @@
   scroll-margin-top: 20px;
 }
 
+.forestBackground {
+  --forest-overlay: rgba(255, 255, 255, .68);
+  --muted: #4b4d51;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--forest-overlay), var(--forest-overlay)),
+    url('./assets/forest-landscape.png');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
+:global([data-theme='dark']) .forestBackground {
+  --forest-overlay: rgba(23, 24, 25, .8);
+  --muted: #b2b3b6;
+}
+
 .sectionHeading {
   display: flex;
   justify-content: space-between;

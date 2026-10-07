@@ -197,7 +197,11 @@ export function App() {
           <span>ИЗДЕЛИЕ</span>
         </div>
 
-        <section id="services" className={styles.section} aria-labelledby="services-title">
+        <section
+          id="services"
+          className={`${styles.section} ${styles.forestBackground}`}
+          aria-labelledby="services-title"
+        >
           <div className={styles.sectionHeading}>
             <div>
               <p className={styles.eyebrow}>01 / ЧТО МЫ ДЕЛАЕМ</p>
@@ -283,65 +287,67 @@ export function App() {
           </ol>
         </section>
 
-        <section id="production" className={styles.section} aria-labelledby="production-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.eyebrow}>03 / МЕСТО, ГДЕ ИДЕИ ОБРЕТАЮТ ФОРМУ</p>
-              <h2 id="production-title">Наше производство</h2>
+        <div className={styles.forestBackground}>
+          <section id="production" className={styles.section} aria-labelledby="production-title">
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.eyebrow}>03 / МЕСТО, ГДЕ ИДЕИ ОБРЕТАЮТ ФОРМУ</p>
+                <h2 id="production-title">Наше производство</h2>
+              </div>
+              <p>
+                Модели, оснастка и готовые изделия.
+                <br />
+                Фотографии наших работ и цеха.
+              </p>
             </div>
-            <p>
-              Модели, оснастка и готовые изделия.
+
+            <div className={styles.productionGrid}>
+              {productionGalleries.map(({ id, title, caption, slides }) => (
+                <figure key={id}>
+                  <ServiceCarousel title={title} slides={slides} />
+                  <figcaption>{caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+
+          <section
+            className={`${styles.section} ${styles.partners}`}
+            aria-labelledby="partners-title"
+          >
+            <div>
+              <p className={styles.eyebrow}>04 / СОТРУДНИЧЕСТВО</p>
+              <h2 id="partners-title">
+                С нами
+                <br />
+                работают
+              </h2>
+            </div>
+
+            <div className={styles.partner}>
+              <span className={styles.partnerSymbol}>РП</span>
+              <div>
+                <small>ООО</small>
+                <strong>Регионпласт</strong>
+              </div>
+            </div>
+
+            <div className={styles.partner}>
+              <span className={styles.boatSymbol}>≋</span>
+              <div>
+                <small>ООО</small>
+                <strong>SUNCRAFT</strong>
+              </div>
+            </div>
+
+            <a className={styles.partnerCta} href="#request">
+              Стать
               <br />
-              Фотографии наших работ и цеха.
-            </p>
-          </div>
-
-          <div className={styles.productionGrid}>
-            {productionGalleries.map(({ id, title, caption, slides }) => (
-              <figure key={id}>
-                <ServiceCarousel title={title} slides={slides} />
-                <figcaption>{caption}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-
-        <section
-          className={`${styles.section} ${styles.partners}`}
-          aria-labelledby="partners-title"
-        >
-          <div>
-            <p className={styles.eyebrow}>04 / СОТРУДНИЧЕСТВО</p>
-            <h2 id="partners-title">
-              С нами
-              <br />
-              работают
-            </h2>
-          </div>
-
-          <div className={styles.partner}>
-            <span className={styles.partnerSymbol}>РП</span>
-            <div>
-              <small>ООО</small>
-              <strong>Регионпласт</strong>
-            </div>
-          </div>
-
-          <div className={styles.partner}>
-            <span className={styles.boatSymbol}>≋</span>
-            <div>
-              <small>ООО</small>
-              <strong>SUNCRAFT</strong>
-            </div>
-          </div>
-
-          <a className={styles.partnerCta} href="#request">
-            Стать
-            <br />
-            партнёром
-            <Icon size={30} />
-          </a>
-        </section>
+              партнёром
+              <Icon size={30} />
+            </a>
+          </section>
+        </div>
 
         <section
           id="request"
