@@ -39,8 +39,8 @@
 }
 
 .brandLogo {
-  width: .86em;
-  height: .86em;
+  width: 1.5em;
+  height: 1.5em;
   object-fit: contain;
   flex: none;
 }
@@ -269,7 +269,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: hue-rotate(-38deg) saturate(1.2);
 }
 
 .ticker {

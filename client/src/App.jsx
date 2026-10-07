@@ -180,21 +180,21 @@ export function App() {
             </div>
 
             <a href="#production" className={styles.heroBadge} aria-label="О нашем производстве">
-              <img className={styles.heroLogo} src="/images/yellow-logo__black-phone.png" alt="" />
+              <img className={styles.heroLogo} src="/images/orange-logo__black-phone.png" alt="" />
             </a>
           </div>
         </section>
 
         <div className={styles.ticker} aria-hidden="true">
-          <span>ОТ ЭСКИЗА ДО ИЗДЕЛИЯ</span>
+          <span>ИДЕЯ</span>
           <b>✳</b>
-          <span>ПОЛНЫЙ ЦИКЛ</span>
+          <span>ПРОЕКТ</span>
           <b>✳</b>
-          <span>СТЕКЛОПЛАСТИК</span>
+          <span>ПРОТОТИП</span>
           <b>✳</b>
-          <span>МЕДВЕДЬ</span>
+          <span>МАТРИЦА</span>
           <b>✳</b>
-          <span>ОТ ЭСКИЗА ДО ИЗДЕЛИЯ</span>
+          <span>ИЗДЕЛИЕ</span>
         </div>
 
         <section id="services" className={styles.section} aria-labelledby="services-title">
