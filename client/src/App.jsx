@@ -180,7 +180,7 @@ export function App() {
             </div>
 
             <a href="#production" className={styles.heroBadge} aria-label="О нашем производстве">
-              <img className={styles.heroLogo} src="/images/orange-logo__black-phone.png" alt="" />
+              <span className={styles.heroLogo} aria-hidden="true" />
             </a>
           </div>
         </section>

@@ -9,7 +9,7 @@
   left: 16px;
   top: -100px;
   z-index: 99;
-  background: var(--orange);
+  background: var(--accent);
   color: #101112;
   padding: 16px;
 }
@@ -84,7 +84,7 @@
 }
 
 .action {
-  background: var(--orange);
+  background: var(--accent);
   color: #101112;
   display: inline-flex;
   align-items: center;
@@ -99,7 +99,7 @@
 }
 
 .action:hover {
-  background: #e47700;
+  background: var(--accent-hover);
   transform: translateY(-2px);
 }
 
@@ -167,7 +167,7 @@
 .hero {
   display: grid;
   grid-template-columns: 53% 47%;
-  background: var(--orange);
+  background: var(--accent);
   color: #101112;
   position: relative;
   min-height: 595px;
@@ -268,7 +268,9 @@
 .heroLogo {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  display: block;
+  background: var(--accent);
+  mask: url('/images/black-logo__transparent.png') center / contain no-repeat;
 }
 
 .ticker {
@@ -296,8 +298,8 @@
 }
 
 .forestBackground {
-  --forest-opacity: .32;
-  --muted: #4b4d51;
+  --forest-opacity: .36;
+  --muted: #405247;
   position: relative;
   isolation: isolate;
   background-color: var(--bg);
@@ -327,7 +329,7 @@
 }
 
 :global([data-theme='dark']) .forestBackground {
-  --forest-opacity: .2;
+  --forest-opacity: .26;
   --muted: #b2b3b6;
 }
 
@@ -437,7 +439,7 @@
 }
 
 .customCard {
-  background: var(--lilac);
+  background: var(--accent-soft);
   color: #101112;
   display: flex;
   flex-direction: column;
@@ -489,7 +491,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--orange);
+  color: var(--accent);
   margin-bottom: 30px;
 }
 
@@ -581,7 +583,7 @@
 }
 
 .partnerCta {
-  background: var(--lilac);
+  background: var(--accent-soft);
   color: #101112;
   padding: 22px;
   display: flex;
@@ -670,7 +672,7 @@
   gap: 24px;
   font-size: 9px;
   letter-spacing: 1px;
-  color: var(--orange);
+  color: var(--accent);
   margin-top: 45px;
 }
 

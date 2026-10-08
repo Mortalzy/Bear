@@ -57,13 +57,13 @@
 }
 
 .dropzone:focus-within {
-  outline: 3px solid #c2b5ff;
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
 .dragging {
-  border-color: var(--orange);
-  background: #26291b;
+  border-color: var(--accent);
+  background: #1c2a21;
 }
 
 .fileInput {
@@ -156,7 +156,7 @@
   width: 15px;
   height: 15px;
   flex-shrink: 0;
-  accent-color: var(--orange);
+  accent-color: var(--accent);
 }
 
 .consent button {
@@ -172,7 +172,7 @@
 
 .submit {
   border: 0;
-  background: var(--orange);
+  background: var(--accent);
   color: #101112;
   display: flex;
   justify-content: space-between;
@@ -185,7 +185,7 @@
 }
 
 .submit:hover {
-  background: #e47700;
+  background: var(--accent-hover);
 }
 
 .mode {
@@ -204,10 +204,10 @@
 .success {
   display: flex;
   gap: 12px;
-  border: 1px solid #798431;
-  background: #1d2116;
+  border: 1px solid #4d8762;
+  background: #18281c;
   padding: 16px;
-  color: #f0f8bf;
+  color: #d9f0dc;
   font-size: 12px;
   line-height: 1.8;
 }
