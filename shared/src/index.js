@@ -1,3 +1,5 @@
+export { OPERATOR } from './operator.js';
+
 export const UPLOAD_POLICY = Object.freeze({
   maxFiles: 5,
   maxFileBytes: 25_000_000,

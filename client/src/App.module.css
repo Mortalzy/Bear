@@ -745,6 +745,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 22px;
   color: var(--muted);
   font-size: 10px;

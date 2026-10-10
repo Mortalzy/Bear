@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env src/index.js",
     "start": "node --env-file-if-exists=.env src/index.js",
-    "test": "node --test"
+    "test": "node --test",
+    "privacy:cleanup": "node --env-file-if-exists=.env src/privacy-maintenance.js cleanup",
+    "privacy:delete": "node --env-file-if-exists=.env src/privacy-maintenance.js delete"
   },
   "dependencies": {
     "@bear/shared": "*",

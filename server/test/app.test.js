@@ -6,6 +6,18 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from '../src/app.js';
 import nodemailer from 'nodemailer';
+import { privacyConfiguration } from '../src/privacy.js';
+
+const legalEnv = {
+  PUBLIC_SITE_URL: 'https://bear.example',
+  OPERATOR_OGRNIP: '123456789012345',
+  OPERATOR_ADDRESS: 'Тестовый адрес для обращений',
+  HOSTING_PROCESSOR: 'Тестовый хостинг, тестовый адрес',
+  MAIL_PROCESSOR: 'Тестовый почтовый сервис, тестовый адрес',
+  PRIVACY_DOCUMENTS_APPROVED: 'true',
+  RKN_NOTIFICATION_CONFIRMED: 'true',
+  RU_DATA_LOCATION_CONFIRMED: 'true',
+};
 
 test('API is reachable but never reports a submitted request before mail is connected', async (t) => {
   const server = createApp().listen(0, '127.0.0.1');
@@ -41,10 +53,12 @@ test('API is reachable but never reports a submitted request before mail is conn
 
 test('submits Cyrillic text and all validated files as attachments; rejects invalid and oversized uploads', async (t) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'bear-test-'));
-  t.after(() => rm(directory, { recursive: true, force: true }));
+  t.after(() => Promise.all([directory, directory + '-consents'].map((root) => rm(root, { recursive: true, force: true }))));
 
   const messages = [];
   const env = {
+    ...legalEnv,
+    CONSENT_DIR: directory + '-consents',
     SMTP_HOST: 'smtp.example.com',
     SMTP_PORT: '465',
     SMTP_USER: 'sender@example.com',
@@ -78,6 +92,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
     data.set('email', 'ivan@example.com');
     data.set('description', 'Нужен корпус катера');
     data.set('consent', 'true');
+    data.set('consentRevision', privacyConfiguration(env).revision);
     data.append('files', new Blob([content]), 'drawing.pdf');
     if (includeLarge) {
       data.append(
@@ -91,6 +106,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
 
   const response = await fetch(url + '/api/requests', {
     method: 'POST',
+    headers: { 'X-Bear-Consent': privacyConfiguration(env).revision },
     body: form('%PDF-1.7\n', true),
   });
 
@@ -110,6 +126,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
 
   const rejected = await fetch(url + '/api/requests', {
     method: 'POST',
+    headers: { 'X-Bear-Consent': privacyConfiguration(env).revision },
     body: form('not a pdf'),
   });
   assert.equal(rejected.status, 400);
@@ -123,6 +140,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
   );
   const oversized = await fetch(url + '/api/requests', {
     method: 'POST',
+    headers: { 'X-Bear-Consent': privacyConfiguration(env).revision },
     body: tooBig,
   });
   assert.equal(oversized.status, 400);
@@ -140,9 +158,11 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
 
 test('reports mail failure and removes uploaded files', async (t) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'bear-failed-mail-'));
-  t.after(() => rm(directory, { recursive: true, force: true }));
+  t.after(() => Promise.all([directory, directory + '-consents'].map((root) => rm(root, { recursive: true, force: true }))));
 
   const env = {
+    ...legalEnv,
+    CONSENT_DIR: directory + '-consents',
     SMTP_HOST: 'smtp.example.com',
     SMTP_USER: 'sender@example.com',
     SMTP_PASSWORD: 'test',
@@ -168,6 +188,7 @@ test('reports mail failure and removes uploaded files', async (t) => {
   data.set('email', 'ivan@example.com');
   data.set('description', 'Проект');
   data.set('consent', 'true');
+  data.set('consentRevision', privacyConfiguration(env).revision);
   data.append('files', new Blob(['%PDF-1.7\n']), 'plan.pdf');
 
   const originalError = console.error;
@@ -176,7 +197,7 @@ test('reports mail failure and removes uploaded files', async (t) => {
   try {
     const response = await fetch(
       'http://127.0.0.1:' + server.address().port + '/api/requests',
-      { method: 'POST', body: data }
+      { method: 'POST', headers: { 'X-Bear-Consent': privacyConfiguration(env).revision }, body: data }
     );
     assert.equal(response.status, 502);
     assert.equal((await response.json()).error.code, 'DELIVERY_FAILED');

@@ -6,4 +6,5 @@ coverage/
 !.env.example
 *.log
 server/storage/
+server/consents/
 .DS_Store
