@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { request } from 'node:http';
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { createApp } from '../src/app.js';
 import { configureHttpServer, UPLOAD_TIMEOUT_MS } from '../src/security.js';
+import { postUpload } from './helpers/upload.js';
 
 async function fixture(t, overrides = {}) {
   const directory = await mkdtemp(path.join(tmpdir(), 'bear-security-'));
@@ -24,7 +25,8 @@ async function fixture(t, overrides = {}) {
     env,
     transport: {
       async sendMail(mail) {
-        messages.push(mail);
+        const fileSizes = await Promise.all(mail.attachments.map(async (file) => (await stat(file.path)).size));
+        messages.push({ ...mail, fileSizes });
         return { accepted: [mail.to] };
       },
     },
@@ -150,23 +152,41 @@ test('an executable upload is rejected without delivering mail or keeping files'
 
 test('an oversized chunked body is terminated, cleaned up, and releases its upload slot', async (t) => {
   const { url, directory, messages } = await fixture(t);
-  const body = validForm();
-  for (let i = 0; i < 2; i++) {
-    body.append('files', new Blob(['%PDF-1.7\n', new Uint8Array(10_000_000)]), i + '.pdf');
-  }
-  const encoded = new Request(url + '/api/requests', { method: 'POST', body });
-  assert.equal(encoded.headers.get('content-length'), null);
-  await assert.rejects(fetch(encoded.url, {
-    method: 'POST',
-    headers: encoded.headers,
-    body: encoded.body,
-    duplex: 'half',
-  }), TypeError);
+  await assert.rejects(postUpload(url, Array(9).fill(23_000_000)), TypeError);
   await waitFor(async () => (await readdir(directory)).length === 0);
   assert.equal(messages.length, 0);
-  const next = await fetch(encoded.url, { method: 'POST', body: validForm() });
+  const next = await fetch(url + '/api/requests', { method: 'POST', body: validForm() });
   assert.equal(next.status, 201);
   assert.equal(messages.length, 1);
+});
+
+test('upload limits allow exact boundaries and reject excess bytes and an eleventh file', async (t) => {
+  const { url, directory, messages } = await fixture(t);
+
+  const single = await postUpload(url, [25_000_000]);
+  assert.equal(single.status, 201, JSON.stringify(await single.json()));
+  assert.deepEqual(messages[0].fileSizes, [25_000_000]);
+  await waitFor(async () => (await readdir(directory)).length === 0);
+
+  const maximum = Array(10).fill(20_000_000);
+  const accepted = await postUpload(url, maximum);
+  assert.equal(accepted.status, 201, JSON.stringify(await accepted.json()));
+  assert.deepEqual(messages[1].fileSizes, maximum);
+  await waitFor(async () => (await readdir(directory)).length === 0);
+
+  for (const sizes of [
+    [25_000_001],
+    [...Array(9).fill(20_000_000), 20_000_001],
+    Array(11).fill(100),
+  ]) {
+    const rejected = await postUpload(url, sizes);
+    assert.equal(rejected.status, 400);
+    const result = await rejected.json();
+    assert.match(result.error.code, /^INVALID_(UPLOAD|FILES)$/);
+    if (sizes.length === 10) assert.match(result.error.message, /200 МБ/);
+    assert.equal(messages.length, 2);
+    await waitFor(async () => (await readdir(directory)).length === 0);
+  }
 });
 
 test('aborted uploads release both slots and delete their partial files', async (t) => {

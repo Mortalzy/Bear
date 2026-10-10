@@ -1,7 +1,7 @@
 export const UPLOAD_POLICY = Object.freeze({
-  maxFiles: 5,
+  maxFiles: 10,
   maxFileBytes: 25_000_000,
-  maxTotalBytes: 18_000_000,
+  maxTotalBytes: 200_000_000,
   extensions: Object.freeze(['.dwg', '.dxf', '.step', '.pdf', '.jpg']),
 });
 
@@ -31,6 +31,6 @@ export function validateFileSelection(files) {
     }
     total += file.size;
   }
-  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 18 МБ.');
+  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 200 МБ.');
   return [...new Set(errors)];
 }
