@@ -182,6 +182,8 @@ export function RequestForm({ onOpenPrivacy }) {
         <p id="file-help">
           До {UPLOAD_POLICY.maxFiles} файлов · всего не более {UPLOAD_POLICY.maxTotalBytes / 1_000_000} МБ
           <br />
+          Каждый файл — до {UPLOAD_POLICY.maxFileBytes / 1_000_000} МБ
+          <br />
           DWG, DXF, STEP, PDF, JPG
         </p>
       </div>

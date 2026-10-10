@@ -28,8 +28,8 @@ test('API is reachable but never reports a submitted request before mail is conn
   const config = await fetch(url + '/api/config').then((r) => r.json());
   assert.equal(config.requestsEnabled, false);
   assert.equal(config.uploads.maxFileBytes, 25_000_000);
-  assert.equal(config.uploads.maxTotalBytes, 18_000_000);
-  assert.equal(config.uploads.maxFiles, 5);
+  assert.equal(config.uploads.maxTotalBytes, 200_000_000);
+  assert.equal(config.uploads.maxFiles, 10);
 
   const response = await fetch(url + '/api/requests', { method: 'POST' });
   assert.equal(response.status, 503);
@@ -118,7 +118,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
   const tooBig = form();
   tooBig.append(
     'files',
-    new Blob(['%PDF-1.7\n', new Uint8Array(18_000_000)]),
+    new Blob(['%PDF-1.7\n', new Uint8Array(25_000_000)]),
     'oversized.pdf'
   );
   const oversized = await fetch(url + '/api/requests', {
