@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RequestForm } from './features/request/RequestForm.jsx';
 import { Icon } from './components/Icon.jsx';
 import { ServiceCarousel } from './components/ServiceCarousel.jsx';
@@ -47,7 +47,6 @@ function Photo({ path, alt, className = '', eager = false }) {
 export function App() {
   const [theme, setTheme] = useState(readTheme);
   const [menuOpen, setMenuOpen] = useState(false);
-  const privacy = useRef(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -404,7 +403,7 @@ export function App() {
             </span>
           </div>
 
-          <RequestForm onOpenPrivacy={() => privacy.current?.showModal()} />
+          <RequestForm />
         </section>
       </main>
 
@@ -457,55 +456,15 @@ export function App() {
               {company.inn && ` · ИНН ${company.inn}`}
             </span>
           )}
-          <button type="button" onClick={() => privacy.current?.showModal()}>
-            Обработка данных
-          </button>
+          <a href="/privacy">Политика обработки персональных данных</a>
+          <a href="/consent">Согласие на обработку данных</a>
           <a href="#top" aria-label="Наверх">
             <Icon size={19} />
           </a>
         </div>
       </footer>
 
-      <dialog
-        ref={privacy}
-        className={styles.dialog}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) privacy.current.close();
-        }}
-      >
-        <div>
-          <button
-            className={styles.dialogClose}
-            type="button"
-            aria-label="Закрыть"
-            onClick={() => privacy.current.close()}
-          >
-            <Icon name="close" />
-          </button>
 
-          <p className={styles.eyebrow}>ИНФОРМАЦИЯ ДЛЯ ЗАЯВИТЕЛЕЙ</p>
-          <h2>Обработка данных</h2>
-          <p>
-            При отправке формы имя, телефон, email, описание проекта и прикреплённые файлы
-            передаются на сервер сайта и направляются на почту компании для рассмотрения заявки
-            и связи с вами.
-          </p>
-          <p>
-            По вопросам обработки данных можно написать на{' '}
-            <a href={`mailto:${company.email}`}>{company.email}</a> или позвонить по телефонам
-            из раздела контактов. Данные компании: {company.legalName}, ИНН {company.inn}.
-          </p>
-          <p>
-            В браузере сохраняется только выбранная тема оформления. Если заявку не удалось
-            отправить, форма покажет ошибку.
-          </p>
-
-          <button className={styles.action} type="button" onClick={() => privacy.current.close()}>
-            Понятно
-            <Icon name="check" size={18} />
-          </button>
-        </div>
-      </dialog>
     </div>
   );
 }

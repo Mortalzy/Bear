@@ -7,6 +7,8 @@ import { readdir, rm, stat, open, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { UPLOAD_POLICY, validateFileSelection } from '@bear/shared';
+import { privacyConfiguration, renderDocument, DOCUMENT_VERSION, digest } from './privacy.js';
+import { saveConsent, removeConsent, cleanConsents } from './consent-store.js';
 
 const DAY = 86_400_000;
 const INCOMPLETE_UPLOAD_DAYS = 1;
@@ -29,6 +31,9 @@ const safeName = (name) => {
 
 function configuration(env) {
   const port = Number(env.SMTP_PORT ?? 465);
+  const knownForeignMail = /(^|[.@])(?:gmail\.com|googlemail\.com|outlook\.com|hotmail\.com|yahoo\.com|icloud\.com)$/i;
+  const foreignMail = [env.SMTP_HOST, env.SMTP_USER, env.COMPANY_EMAIL, env.PRIVACY_EMAIL]
+    .some((value) => typeof value === 'string' && knownForeignMail.test(value));
 
   return {
     port,
@@ -44,6 +49,7 @@ function configuration(env) {
         env.SMTP_USER &&
         env.SMTP_PASSWORD &&
         env.COMPANY_EMAIL &&
+        !foreignMail &&
         Number.isInteger(port) &&
         port > 0 &&
         port <= 65535
@@ -51,11 +57,11 @@ function configuration(env) {
   };
 }
 
-function validateFields(body) {
+function validateFields(body, revision) {
   if (
     !body ||
     Object.keys(body).some(
-      (key) => !['name', 'phone', 'email', 'description', 'consent'].includes(key)
+      (key) => !['name', 'phone', 'email', 'description', 'consent', 'consentRevision'].includes(key)
     )
   ) {
     return 'Некорректные поля заявки.';
@@ -95,6 +101,10 @@ function validateFields(body) {
 
   if (consent !== 'true') {
     return 'Подтвердите согласие на обработку данных.';
+  }
+
+  if (body.consentRevision !== revision) {
+    return 'Условия обработки изменились. Обновите страницу и прочитайте согласие заново.';
   }
 
   return null;
@@ -138,7 +148,7 @@ async function validSignature(file) {
   }
 }
 
-async function cleanExpired(root) {
+export async function cleanExpired(root) {
   await mkdir(root, { recursive: true, mode: 0o700 });
 
   for (const entry of await readdir(root, { withFileTypes: true })) {
@@ -166,6 +176,20 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
   app.disable('x-powered-by');
 
   const config = configuration(env);
+  const privacy = privacyConfiguration(env);
+  const requestsEnabled = config.ready && privacy.ready;
+  const consentRoot = path.resolve(env.CONSENT_DIR ?? fileURLToPath(new URL('../consents', import.meta.url)));
+  // Only trust the local reverse proxy, never arbitrary forwarded addresses.
+  if (env.NODE_ENV === 'production') app.set('trust proxy', 'loopback');
+  app.use((_req, res, next) => {
+    res.set({
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    });
+    next();
+  });
   const mailer =
     transport ??
     (config.ready
@@ -199,28 +223,46 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     limits: {
       files: UPLOAD_POLICY.maxFiles,
       fileSize: UPLOAD_POLICY.maxFileBytes,
-      fields: 5,
+      fields: 6,
       fieldSize: 16_384,
-      parts: 10,
+      parts: 11,
       fieldNameSize: 40,
     },
   }).array('files', UPLOAD_POLICY.maxFiles);
 
   app.get('/api/health', (_req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ status: 'ok', requestsEnabled: config.ready });
+    res.json({ status: 'ok', requestsEnabled });
   });
 
   app.get('/api/config', (_req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ requestsEnabled: config.ready, uploads: UPLOAD_POLICY });
+    res.json({ requestsEnabled, uploads: UPLOAD_POLICY, privacy: {
+      revision: privacy.revision, version: DOCUMENT_VERSION,
+      policyUrl: '/privacy', consentUrl: '/consent', email: privacy.email,
+    } });
   });
+
+  for (const [url, type] of [['/privacy', 'policy'], ['/consent', 'consent']]) {
+    app.get(url, (_req, res) => {
+      res.set('Cache-Control', 'no-store');
+      res.type('html').send(renderDocument(privacy, type));
+    });
+  }
 
   app.post('/api/requests', async (req, res) => {
     res.set('Cache-Control', 'no-store');
 
-    if (!config.ready) {
+    if (!requestsEnabled) {
       return reply(res, 503, 'REQUESTS_UNAVAILABLE', 'Приём заявок пока не настроен.');
+    }
+
+    if (env.NODE_ENV === 'production' && (!req.secure || req.get('origin') !== privacy.site)) {
+      return reply(res, 403, 'ORIGIN', 'Отправляйте заявку с HTTPS-страницы сайта.');
+    }
+    // Check the explicit confirmation before Multer writes any attached files.
+    if (req.get('X-Bear-Consent') !== privacy.revision) {
+      return reply(res, 400, 'CONSENT_REQUIRED', 'Прочитайте согласие и подтвердите обработку данных.');
     }
 
     const recent = (attempts.get(req.ip) ?? []).filter(
@@ -253,13 +295,14 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
 
     const directory = path.join(config.root, req.requestId);
     let delivered = false;
+    let receiptSaved = false;
 
     try {
       await new Promise((resolve, reject) =>
         upload(req, res, (error) => (error ? reject(error) : resolve()))
       );
 
-      const invalid = validateFields(req.body);
+      const invalid = validateFields(req.body, privacy.revision);
       if (invalid) return reply(res, 400, 'INVALID_FIELDS', invalid);
 
       const files = req.files ?? [];
@@ -287,6 +330,23 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
         contentType: 'application/octet-stream',
       }));
 
+      const acceptedAt = new Date(now()).toISOString();
+      const receipt = {
+        id: req.requestId, acceptedAt,
+        subjectEmail: req.body.email.trim().toLowerCase(),
+        version: DOCUMENT_VERSION, revision: privacy.revision,
+        consentText: privacy.consentText, policyText: privacy.policyText,
+        requestHash: digest(JSON.stringify({
+          name: req.body.name.trim(), phone: req.body.phone, email: req.body.email,
+          description: req.body.description.trim(),
+          files: files.map((file) => ({ name: safeName(file.originalname), size: file.size })),
+        })),
+        source: privacy.site + '/#request',
+      };
+      // Do not deliver personal data when the evidence journal cannot be written.
+      await saveConsent(consentRoot, receipt);
+      receiptSaved = true;
+
       const result = await mailer.sendMail({
         from: config.user,
         to: config.recipient,
@@ -303,7 +363,7 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
           attachments.length
             ? attachments.map((file) => file.filename).join('\n')
             : 'Нет'
-        }\n`,
+        }\n\nНомер заявки: ${req.requestId}\nСогласие получено: ${acceptedAt}\nРедакция: ${DOCUMENT_VERSION}\nВерсия: ${privacy.revision}\n\n${privacy.consentText}\n`,
         attachments,
       });
 
@@ -343,6 +403,11 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
       activeUploads--;
 
       if (!delivered) {
+        if (receiptSaved) {
+          await removeConsent(consentRoot, req.requestId).catch(() =>
+            console.error('Failed to remove unsuccessful consent receipt')
+          );
+        }
         await rm(directory, { recursive: true, force: true }).catch(() =>
           console.error('Failed to remove unsuccessful upload')
         );
@@ -373,6 +438,22 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
         ),
       DAY
     ).unref();
+  }
+
+  const pruneAttempts = () => {
+    for (const [ip, times] of attempts) {
+      const recent = times.filter((time) => now() - time < 3_600_000);
+      if (recent.length) attempts.set(ip, recent);
+      else attempts.delete(ip);
+    }
+  };
+  setInterval(pruneAttempts, 60_000).unref();
+  {
+    const cleanup = () => cleanConsents(consentRoot, now()).catch((error) =>
+      console.error('Consent cleanup failed:', error.code ?? 'UNKNOWN')
+    );
+    cleanup();
+    setInterval(cleanup, 3_600_000).unref();
   }
 
   return app;
