@@ -1,4 +1,5 @@
 import { createApp } from './app.js';
+import { configureHttpServer } from './security.js';
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? '127.0.0.1';
@@ -9,6 +10,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 const server = createApp().listen(port, host, () => {
   console.log('Bear API listening on http://' + host + ':' + port);
 });
+configureHttpServer(server);
 server.on('error', (error) => {
   console.error('API failed to start:', error.code ?? 'UNKNOWN');
   process.exitCode = 1;

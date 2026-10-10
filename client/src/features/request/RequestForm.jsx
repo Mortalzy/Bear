@@ -180,7 +180,7 @@ export function RequestForm({ onOpenPrivacy }) {
           <Icon name="plus" size={20} />
         </label>
         <p id="file-help">
-          До {UPLOAD_POLICY.maxFiles} файлов · всего не более 25 МБ
+          До {UPLOAD_POLICY.maxFiles} файлов · всего не более {UPLOAD_POLICY.maxTotalBytes / 1_000_000} МБ
           <br />
           DWG, DXF, STEP, PDF, JPG
         </p>

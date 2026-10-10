@@ -7,6 +7,7 @@ import { readdir, rm, stat, open, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { UPLOAD_POLICY, validateFileSelection } from '@bear/shared';
+import { protectApp, receiveUpload, MAX_REQUEST_BYTES } from './security.js';
 
 const DAY = 86_400_000;
 const INCOMPLETE_UPLOAD_DAYS = 1;
@@ -161,9 +162,10 @@ async function cleanExpired(root) {
   }
 }
 
-export function createApp({ env = process.env, transport, now = () => Date.now() } = {}) {
+export function createApp({ env = process.env, transport } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  const requestLimiter = protectApp(app, env);
 
   const config = configuration(env);
   const mailer =
@@ -174,14 +176,22 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
           port: config.port,
           secure: config.port === 465,
           requireTLS: config.port !== 465,
+          connectionTimeout: 10_000,
+          greetingTimeout: 10_000,
+          socketTimeout: 30_000,
           auth: { user: config.user, pass: config.password },
         })
       : null);
 
   let activeUploads = 0;
-  const attempts = new Map();
 
   const upload = multer({
+    fileFilter(_req, file, callback) {
+      if (!UPLOAD_POLICY.extensions.includes(path.extname(file.originalname).toLowerCase())) {
+        return callback(new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+      }
+      callback(null, true);
+    },
     storage: multer.diskStorage({
       destination(req, _file, callback) {
         try {
@@ -198,7 +208,7 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     }),
     limits: {
       files: UPLOAD_POLICY.maxFiles,
-      fileSize: UPLOAD_POLICY.maxFileBytes,
+      fileSize: Math.min(UPLOAD_POLICY.maxFileBytes, UPLOAD_POLICY.maxTotalBytes),
       fields: 5,
       fieldSize: 16_384,
       parts: 10,
@@ -216,26 +226,15 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     res.json({ requestsEnabled: config.ready, uploads: UPLOAD_POLICY });
   });
 
-  app.post('/api/requests', async (req, res) => {
+  app.post('/api/requests', requestLimiter, async (req, res) => {
     res.set('Cache-Control', 'no-store');
 
     if (!config.ready) {
       return reply(res, 503, 'REQUESTS_UNAVAILABLE', 'Приём заявок пока не настроен.');
     }
 
-    const recent = (attempts.get(req.ip) ?? []).filter(
-      (time) => now() - time < 3_600_000
-    );
-
-    if (recent.length >= 5) {
-      return reply(res, 429, 'RATE_LIMIT', 'Слишком много заявок. Попробуйте позже.');
-    }
-
-    recent.push(now());
-    attempts.set(req.ip, recent);
-
-    if (attempts.size > 10_000) attempts.clear();
     if (activeUploads >= 2) {
+      res.set('Retry-After', '10');
       return reply(res, 503, 'BUSY', 'Сервер занят. Повторите попытку позже.');
     }
     if (!req.is('multipart/form-data')) {
@@ -243,7 +242,7 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     }
     if (
       Number(req.headers['content-length']) >
-      UPLOAD_POLICY.maxTotalBytes + 1_000_000
+      MAX_REQUEST_BYTES
     ) {
       return reply(res, 413, 'TOO_LARGE', 'Размер заявки превышает лимит.');
     }
@@ -255,9 +254,7 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
     let delivered = false;
 
     try {
-      await new Promise((resolve, reject) =>
-        upload(req, res, (error) => (error ? reject(error) : resolve()))
-      );
+      await receiveUpload(upload, req, res);
 
       const invalid = validateFields(req.body);
       if (invalid) return reply(res, 400, 'INVALID_FIELDS', invalid);
@@ -320,6 +317,7 @@ export function createApp({ env = process.env, transport, now = () => Date.now()
 
       res.status(201).json({ id: req.requestId, message: 'Заявка отправлена.' });
     } catch (error) {
+      if (req.aborted || res.destroyed || res.writableEnded) return;
       if (error instanceof multer.MulterError) {
         reply(
           res,

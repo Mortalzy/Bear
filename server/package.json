@@ -11,7 +11,9 @@
   "dependencies": {
     "@bear/shared": "*",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
     "multer": "^2.4.0",
-    "nodemailer": "^7.0.13"
+    "nodemailer": "^10.1.0"
   }
 }
