@@ -152,7 +152,7 @@ test('an executable upload is rejected without delivering mail or keeping files'
 
 test('an oversized chunked body is terminated, cleaned up, and releases its upload slot', async (t) => {
   const { url, directory, messages } = await fixture(t);
-  await assert.rejects(postUpload(url, Array(9).fill(23_000_000)), TypeError);
+  await assert.rejects(postUpload(url, Array(3).fill(8_000_000)), TypeError);
   await waitFor(async () => (await readdir(directory)).length === 0);
   assert.equal(messages.length, 0);
   const next = await fetch(url + '/api/requests', { method: 'POST', body: validForm() });
@@ -163,27 +163,27 @@ test('an oversized chunked body is terminated, cleaned up, and releases its uplo
 test('upload limits allow exact boundaries and reject excess bytes and an eleventh file', async (t) => {
   const { url, directory, messages } = await fixture(t);
 
-  const single = await postUpload(url, [25_000_000]);
+  const single = await postUpload(url, [20_000_000]);
   assert.equal(single.status, 201, JSON.stringify(await single.json()));
-  assert.deepEqual(messages[0].fileSizes, [25_000_000]);
+  assert.deepEqual(messages[0].fileSizes, [20_000_000]);
   await waitFor(async () => (await readdir(directory)).length === 0);
 
-  const maximum = Array(10).fill(20_000_000);
+  const maximum = Array(10).fill(2_000_000);
   const accepted = await postUpload(url, maximum);
   assert.equal(accepted.status, 201, JSON.stringify(await accepted.json()));
   assert.deepEqual(messages[1].fileSizes, maximum);
   await waitFor(async () => (await readdir(directory)).length === 0);
 
   for (const sizes of [
-    [25_000_001],
-    [...Array(9).fill(20_000_000), 20_000_001],
+    [20_000_001],
+    [...Array(9).fill(2_000_000), 2_000_001],
     Array(11).fill(100),
   ]) {
     const rejected = await postUpload(url, sizes);
     assert.equal(rejected.status, 400);
     const result = await rejected.json();
     assert.match(result.error.code, /^INVALID_(UPLOAD|FILES)$/);
-    if (sizes.length === 10) assert.match(result.error.message, /200 МБ/);
+    if (sizes.length === 10) assert.match(result.error.message, /20 МБ/);
     assert.equal(messages.length, 2);
     await waitFor(async () => (await readdir(directory)).length === 0);
   }

@@ -27,8 +27,8 @@ test('API is reachable but never reports a submitted request before mail is conn
 
   const config = await fetch(url + '/api/config').then((r) => r.json());
   assert.equal(config.requestsEnabled, false);
-  assert.equal(config.uploads.maxFileBytes, 25_000_000);
-  assert.equal(config.uploads.maxTotalBytes, 200_000_000);
+  assert.equal(config.uploads.maxFileBytes, 20_000_000);
+  assert.equal(config.uploads.maxTotalBytes, 20_000_000);
   assert.equal(config.uploads.maxFiles, 10);
 
   const response = await fetch(url + '/api/requests', { method: 'POST' });
@@ -49,7 +49,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
     SMTP_PORT: '465',
     SMTP_USER: 'sender@example.com',
     SMTP_PASSWORD: 'test-only',
-    COMPANY_EMAIL: 'bear.fiberglass@mail.ru',
+    COMPANY_EMAIL: 'german-pironen@yandex.ru',
     UPLOAD_DIR: directory,
   };
 
@@ -118,7 +118,7 @@ test('submits Cyrillic text and all validated files as attachments; rejects inva
   const tooBig = form();
   tooBig.append(
     'files',
-    new Blob(['%PDF-1.7\n', new Uint8Array(25_000_000)]),
+    new Blob(['%PDF-1.7\n', new Uint8Array(20_000_000)]),
     'oversized.pdf'
   );
   const oversized = await fetch(url + '/api/requests', {
@@ -146,7 +146,7 @@ test('reports mail failure and removes uploaded files', async (t) => {
     SMTP_HOST: 'smtp.example.com',
     SMTP_USER: 'sender@example.com',
     SMTP_PASSWORD: 'test',
-    COMPANY_EMAIL: 'bear.fiberglass@mail.ru',
+    COMPANY_EMAIL: 'german-pironen@yandex.ru',
     UPLOAD_DIR: directory,
   };
 
@@ -202,7 +202,7 @@ test('Nodemailer emits Cyrillic text as UTF-8 base64 rather than mojibake', asyn
 
   const info = await transport.sendMail({
     from: 'sender@example.com',
-    to: 'bear.fiberglass@mail.ru',
+    to: 'german-pironen@yandex.ru',
     subject: 'Новая заявка с сайта BEAR',
     textEncoding: 'base64',
     text: 'Имя: Иван',

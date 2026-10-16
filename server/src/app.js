@@ -208,7 +208,7 @@ export function createApp({ env = process.env, transport } = {}) {
     }),
     limits: {
       files: UPLOAD_POLICY.maxFiles,
-      // Busboy signals a limit at this exact size; shared validation allows 25 MB inclusive.
+      // Busboy signals a limit at this exact size; shared validation allows 20 MB inclusive.
       fileSize: UPLOAD_POLICY.maxFileBytes + 1,
       fields: 5,
       fieldSize: 16_384,

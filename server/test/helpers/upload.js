@@ -1,4 +1,4 @@
-// Stream real multipart bytes without allocating the complete 200 MB upload in RAM.
+// Stream real multipart bytes without allocating the complete 20 MB upload in RAM.
 export function postUpload(url, sizes) {
   const boundary = 'bear-upload-boundary';
   const fields = {

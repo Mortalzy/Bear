@@ -1,7 +1,7 @@
 export const UPLOAD_POLICY = Object.freeze({
   maxFiles: 10,
-  maxFileBytes: 25_000_000,
-  maxTotalBytes: 200_000_000,
+  maxFileBytes: 20_000_000,
+  maxTotalBytes: 20_000_000,
   extensions: Object.freeze(['.dwg', '.dxf', '.step', '.pdf', '.jpg']),
 });
 
@@ -27,10 +27,10 @@ export function validateFileSelection(files) {
     }
     if (file.size === 0) errors.push('Файл пуст: ' + name);
     if (file.size > UPLOAD_POLICY.maxFileBytes) {
-      errors.push('Файл больше 25 МБ: ' + name);
+      errors.push('Файл больше 20 МБ: ' + name);
     }
     total += file.size;
   }
-  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 200 МБ.');
+  if (total > UPLOAD_POLICY.maxTotalBytes) errors.push('Общий размер файлов больше 20 МБ.');
   return [...new Set(errors)];
 }
