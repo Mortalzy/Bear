@@ -326,21 +326,33 @@ export function App() {
               </h2>
             </div>
 
-            <div className={styles.partner}>
-              <span className={styles.partnerSymbol}>РП</span>
+            <a
+              className={styles.partner}
+              href="https://63plast.ru/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="ООО «Регионпласт» — открыть сайт в новой вкладке"
+            >
+              <span className={styles.partnerSymbol} aria-hidden="true">РП</span>
               <div>
                 <small>ООО</small>
                 <strong>Регионпласт</strong>
               </div>
-            </div>
+            </a>
 
-            <div className={styles.partner}>
-              <span className={styles.boatSymbol}>≋</span>
+            <a
+              className={styles.partner}
+              href="https://suncraft-boats.ru/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="ООО «К-БОАТС» (SUNCRAFT) — открыть сайт в новой вкладке"
+            >
+              <span className={styles.boatSymbol} aria-hidden="true">≋</span>
               <div>
-                <small>ООО</small>
+                <small>ООО «К-БОАТС»</small>
                 <strong>SUNCRAFT</strong>
               </div>
-            </div>
+            </a>
 
             <a className={styles.partnerCta} href="#request">
               Стать

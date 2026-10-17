@@ -1,3 +1,5 @@
+const coordinates = '53.13416, 50.22923';
+
 export const company = {
   name: 'BEAR',
   phones: [
@@ -7,8 +9,8 @@ export const company = {
   email: 'german-pironen@yandex.ru',
   legalName: 'ИП Пиронен Герман Сергеевич',
   inn: '165027223815',
-  coordinates: '53.134691, 50.230123',
-  mapUrl: 'https://www.google.com/maps/search/?api=1&query=53.134691%2C50.230123',
+  coordinates,
+  mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`,
 };
 
 export const services = [

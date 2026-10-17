@@ -68,7 +68,33 @@ npm run build
 npm run preview -w @bear/client
 ```
 
-Production-файлы создаются в `client/dist`. `npm start` запускает только API, не выдаёт frontend. Хостинг ещё не настроен. Черновик содержит `noindex, nofollow`; перед публикацией это нужно убрать после проверки контента.
+Production-файлы создаются в `client/dist`. `npm start` запускает только API, не выдаёт frontend. На VPS frontend раздаёт Nginx, а запросы `/api/` перенаправляет в Node.js.
+
+## Публикация и поиск
+
+Основной адрес сайта: **https://medved-samara163.ru/**. В HTML разрешена индексация, заданы заголовок, описание, canonical и Open Graph. Файлы `client/public/robots.txt` и `client/public/sitemap.xml` попадают в сборку автоматически. При смене домена обновите адреса в этих файлах и `client/index.html`.
+
+Обновление frontend на настроенном VPS (проект `/opt/bear`):
+
+```bash
+cd /opt/bear
+git pull --ff-only
+npm ci --include=dev
+npm run build
+```
+
+Для этих изменений перезапуск Node.js и изменение рабочего конфига Nginx не требуются. Проверьте опубликованные файлы:
+
+```bash
+curl -fsSL https://medved-samara163.ru/ | head -n 25
+curl -fsSL https://www.medved-samara163.ru/ | head -n 25
+curl -fsSL https://medved-samara163.ru/robots.txt
+curl -fsSL https://medved-samara163.ru/sitemap.xml
+```
+
+Если вместо страницы по какому-либо адресу приходит `Welcome to nginx`, проверьте `server_name` и `root` в `/etc/nginx/sites-available/bear`: домены должны обслуживаться конфигом сайта, а `root` указывать на `/opt/bear/client/dist`. Перед применением любых изменений конфига выполните `sudo nginx -t`, затем `sudo systemctl reload nginx`.
+
+Если опубликованная страница уже правильная, а в поиске осталось `Welcome to nginx`, это может быть сохранённый результат индексации заглушки. После обновления отправьте главную страницу на переобход в Google Search Console и Яндекс Вебмастере; добавьте туда `https://medved-samara163.ru/sitemap.xml`. Изменение поисковой выдачи происходит после обработки страницы поисковиком, а не сразу после сборки.
 
 ## Где редактировать
 

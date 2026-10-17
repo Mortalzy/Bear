@@ -562,6 +562,22 @@
   margin-bottom: 4px;
 }
 
+.partner:hover,
+.partner:focus-visible {
+  background: var(--accent-soft);
+  color: #101112;
+}
+
+.partner:hover small,
+.partner:focus-visible small {
+  color: #444;
+}
+
+.partner:hover .partnerSymbol,
+.partner:focus-visible .partnerSymbol {
+  border-color: currentColor;
+}
+
 .partner strong {
   font-size: clamp(16px, 1.6vw, 25px);
   font-weight: 700;
