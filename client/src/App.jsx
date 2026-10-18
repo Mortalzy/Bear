@@ -13,6 +13,8 @@ const navigation = [
   ['#contacts', 'Контакты'],
 ];
 
+const productionStages = ['ИДЕЯ', 'ПРОЕКТ', 'ПРОТОТИП', 'МАТРИЦА', 'ИЗДЕЛИЕ'];
+
 function readTheme() {
   try {
     const saved = localStorage.getItem('bear-theme');
@@ -64,6 +66,15 @@ export function App() {
     };
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
+  }, []);
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1001px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setMenuOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
   }, []);
 
   return (
@@ -186,15 +197,12 @@ export function App() {
         </section>
 
         <div className={styles.ticker} aria-hidden="true">
-          <span>ИДЕЯ</span>
-          <b>✳</b>
-          <span>ПРОЕКТ</span>
-          <b>✳</b>
-          <span>ПРОТОТИП</span>
-          <b>✳</b>
-          <span>МАТРИЦА</span>
-          <b>✳</b>
-          <span>ИЗДЕЛИЕ</span>
+          {productionStages.map((stage) => (
+            <span className={styles.tickerItem} key={stage}>
+              <Icon name="asterisk" size={20} />
+              <span>{stage}</span>
+            </span>
+          ))}
         </div>
 
         <section
