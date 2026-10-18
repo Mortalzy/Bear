@@ -1,5 +1,8 @@
 export function Icon({ name = 'arrow', size = 24, ...props }) {
   const paths = {
+    asterisk: (
+      <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4 18.4 5.6" />
+    ),
     arrow: (
       <>
         <path d="M5 19 19 5M5 5h14v14" />
